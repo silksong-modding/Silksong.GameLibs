@@ -1,0 +1,80 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--version 1.0.28324 - steam depots - windows: 1030301 - mac: 1030302 - linux: 1030303-->
+    <TargetSilksongVersion>1.0.28324</TargetSilksongVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <PackageVersion>1.0.0-silksong$(TargetSilksongVersion)</PackageVersion>
+    <Authors>BadMagic</Authors>
+    <Description>The game libraries used for modding Hollow Knight: Silksong</Description>
+    <PackageTags>silksong modding bepinex5</PackageTags>
+    <IncludeBuildOutput>False</IncludeBuildOutput>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <PackageReadmeFile>doc/README.md</PackageReadmeFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/BadMagic100/Silksong.GameLibs</PackageProjectUrl>
+    <!--
+    NuGet complains about using the /ref/ path in packages because it doesn't work for projects using packages.config.
+    However we do not care about this and would rather declutter our users' build directories at the cost of "forcing"
+    the usage of PackageReference.
+    -->
+    <NoWarn>$(NoWarn);NU5131</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.3" ExcludeAssets="all" GeneratePathProperty="true"/>
+    <PackageReference Include="MonoMod.RuntimeDetour.HookGen" Version="22.7.31.1" PrivateAssets="all" GeneratePathProperty="true"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="doc/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SystemFiles Include="ref/$(TargetSilksongVersion)/System*.dll"/>
+    <SystemFiles Include="ref/$(TargetSilksongVersion)/netstandard.dll"/>
+    <SystemFiles Include="ref/$(TargetSilksongVersion)/mscorlib.dll"/>
+    <SystemFiles Include="ref/$(TargetSilksongVersion)/Unity*.dll"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <GameFiles Include="ref/$(TargetSilksongVersion)/Assembly-CSharp.dll" Publicize="true" Strip="true"/>
+    <GameFiles Include="ref/$(TargetSilksongVersion)/PlayMaker.dll" Publicize="true" Strip="true"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="**/*" />
+    <!-- System files are excluded because users don't need them. Game files are excluded because we will strip/publicize and include that instead-->
+    <Content Include="ref/$(TargetSilksongVersion)/*" Exclude="@(SystemFiles);@(GameFiles)" Pack="True" PackagePath="ref/$(TargetFramework)"/>
+  </ItemGroup>
+
+  <UsingTask TaskName="PublicizeTask" AssemblyFile="$(PkgBepInEx_AssemblyPublicizer_MSBuild)/lib/netstandard2.1/BepInEx.AssemblyPublicizer.MSBuild.dll"/>
+  <Target Name="StripAndPublicize" BeforeTargets="FindReferenceAssembliesForReferences" AfterTargets="ResolveReferences">
+    <PropertyGroup>
+      <GeneratedIgnoresAccessChecksToFile>$(IntermediateOutputPath)$(MSBuildProjectName).IgnoresAccessChecksTo.cs</GeneratedIgnoresAccessChecksToFile>
+    </PropertyGroup>
+
+    <PublicizeTask IntermediateOutputPath="$(IntermediateOutputPath)" 
+            GeneratedIgnoresAccessChecksToFile="$(GeneratedIgnoresAccessChecksToFile)"
+            ReferencePath="@(GameFiles)"
+            PackageReference=""
+            Publicize="">
+        <Output TaskParameter="PublicizedReferences" ItemName="PublicizedReferences"/>
+    </PublicizeTask>
+
+    <ItemGroup>
+      <Content Include="@(PublicizedReferences)" Pack="true" PackagePath="ref/$(TargetFramework)"/>
+    </ItemGroup>
+  </Target>
+
+  <!-- 
+  TODO - add a hookgen target later, currently does not work but we don't have a way to distribute the generated hooks to players yet anyway
+  Can refer to https://github.com/BadMagic100/Grime.GameLibs/blob/d1189a5858d77fb5000f7db00be73113ac62798c/Grime.GameLibs.csproj#L59 as a starting point
+  
+  -->
+
+
+</Project>
