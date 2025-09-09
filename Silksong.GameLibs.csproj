@@ -7,7 +7,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <PackageVersion>1.0.0-silksong$(TargetSilksongVersion)</PackageVersion>
+    <PackageVersion>1.0.1-silksong$(TargetSilksongVersion)</PackageVersion>
     <Authors>BadMagic</Authors>
     <Description>The game libraries used for modding Hollow Knight: Silksong</Description>
     <PackageTags>silksong modding bepinex5</PackageTags>
@@ -38,7 +38,8 @@
     <SystemFiles Include="ref/$(TargetSilksongVersion)/System*.dll"/>
     <SystemFiles Include="ref/$(TargetSilksongVersion)/netstandard.dll"/>
     <SystemFiles Include="ref/$(TargetSilksongVersion)/mscorlib.dll"/>
-    <SystemFiles Include="ref/$(TargetSilksongVersion)/Unity*.dll"/>
+    <!-- Included in UnityEngine.Modules package from BepInEx BaGet so we don't need to bundle these -->
+    <SystemFiles Include="ref/$(TargetSilksongVersion)/UnityEngine*.dll"/>
   </ItemGroup>
 
   <ItemGroup>
