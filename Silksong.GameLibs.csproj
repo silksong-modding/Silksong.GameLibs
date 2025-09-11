@@ -7,7 +7,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <PackageVersion>1.0.1-silksong$(TargetSilksongVersion)</PackageVersion>
+    <PackageVersion>1.0.2-silksong$(TargetSilksongVersion)</PackageVersion>
     <Authors>BadMagic</Authors>
     <Description>The game libraries used for modding Hollow Knight: Silksong</Description>
     <PackageTags>silksong modding bepinex5</PackageTags>
@@ -38,8 +38,13 @@
     <SystemFiles Include="ref/$(TargetSilksongVersion)/System*.dll"/>
     <SystemFiles Include="ref/$(TargetSilksongVersion)/netstandard.dll"/>
     <SystemFiles Include="ref/$(TargetSilksongVersion)/mscorlib.dll"/>
-    <!-- Included in UnityEngine.Modules package from BepInEx BaGet so we don't need to bundle these -->
-    <SystemFiles Include="ref/$(TargetSilksongVersion)/UnityEngine*.dll"/>
+    <!-- 
+    Included in UnityEngine.Modules package from BepInEx BaGet so we don't need to bundle these.
+    Counterintuitively the "exclude" list is stuff which should be included in the bundle (it is excluded from the list of stuff to remove)
+    because they are not covered by UnityEngine.Modules
+    -->
+    <SystemFiles Include="ref/$(TargetSilksongVersion)/UnityEngine*.dll" 
+            Exclude="ref/$(TargetSilksongVersion)/UnityEngine.AMDModule.dll;ref/$(TargetSilksongVersion)/UnityEngine.ARModule.dll;ref/$(TargetSilksongVersion)/UnityEngine.NVIDIAModule.dll;ref/$(TargetSilksongVersion)/UnityEngine.UI.dll"/>
   </ItemGroup>
 
   <ItemGroup>
