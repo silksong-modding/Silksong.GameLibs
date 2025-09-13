@@ -1,8 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!--version 1.0.28324 - steam depots - windows: 1030301 - mac: 1030302 - linux: 1030303-->
-    <TargetSilksongVersion>1.0.28324</TargetSilksongVersion>
+    <!--steam depots - windows: 1030301 - mac: 1030302 - linux: 1030303 -->
+    <!-- version 1.0.28324 manifests - windows: 3229726349000518284 - mac: 1365730835793684614 - linux: 8384590172287463475 -->
+    <!--<TargetSilksongVersion>1.0.28324</TargetSilksongVersion>-->
+    <!-- version 1.0.28497 manifests - windows: 539129767115354441 - mac: 8670159430480702509 - linux: 6701825740120558137 -->
+    <TargetSilksongVersion>1.0.28497</TargetSilksongVersion>
   </PropertyGroup>
 
   <PropertyGroup>
