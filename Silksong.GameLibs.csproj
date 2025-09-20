@@ -58,6 +58,7 @@
   <ItemGroup>
     <GameFiles Include="ref/$(TargetSilksongVersion)/Assembly-CSharp.dll" Publicize="true" Strip="true"/>
     <GameFiles Include="ref/$(TargetSilksongVersion)/PlayMaker.dll" Publicize="true" Strip="true"/>
+    <GameFiles Include="ref/$(TargetSilksongVersion)/TeamCherry.*.dll" Publicize="true" Strip="true"/>
   </ItemGroup>
 
   <ItemGroup>
