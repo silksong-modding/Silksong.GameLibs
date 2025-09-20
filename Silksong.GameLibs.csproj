@@ -1,21 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <!--steam depots - windows: 1030301 - mac: 1030302 - linux: 1030303 -->
-
-    <!-- version 1.0.28324 manifests - windows: 3229726349000518284 - mac: 1365730835793684614 - linux: 8384590172287463475 -->
-    <!--<TargetSilksongVersion>1.0.28324</TargetSilksongVersion>-->
-
-    <!-- version 1.0.28497 manifests - windows: 539129767115354441 - mac: 8670159430480702509 - linux: 6701825740120558137 -->
-    <!--<TargetSilksongVersion>1.0.28497</TargetSilksongVersion>-->
-
-    <!-- version 1.0.28561 manifests - windows: 8642535143474926050 - mac: 9022715293716759452 - linux: 6373658714389144408  -->
-    <TargetSilksongVersion>1.0.28561</TargetSilksongVersion>
-  </PropertyGroup>
+  <!-- Fail the build if TargetSilksongVersion is not set, as early as possible -->
+  <Target Name="EnsureTargetSilksongVersionSet" BeforeTargets="ResolveReferences">
+    <Error Condition=" '$(TargetSilksongVersion)' == '' " Text="TargetSilksongVersion property must be set (e.g. via -p:TargetSilksongVersion=1.0.28324)" />
+  </Target>
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <PackageVersion>1.0.2-silksong$(TargetSilksongVersion)</PackageVersion>
+    <PackageVersion>1.1.0-silksong$(TargetSilksongVersion)</PackageVersion>
     <Authors>BadMagic</Authors>
     <Description>The game libraries used for modding Hollow Knight: Silksong</Description>
     <PackageTags>silksong modding bepinex5</PackageTags>
@@ -89,7 +81,6 @@
   <!-- 
   TODO - add a hookgen target later, currently does not work but we don't have a way to distribute the generated hooks to players yet anyway
   Can refer to https://github.com/BadMagic100/Grime.GameLibs/blob/d1189a5858d77fb5000f7db00be73113ac62798c/Grime.GameLibs.csproj#L59 as a starting point
-  
   -->
 
 
