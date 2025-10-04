@@ -487,3 +487,7 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Prevent nuget.config from being checked in
+.nuget_config
+.nuget_api_key

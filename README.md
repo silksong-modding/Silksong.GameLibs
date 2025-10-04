@@ -47,3 +47,29 @@ Replace `1.0.28324` with the desired version. The build will fail if `TargetSilk
 
 Adding/removing assemblies in the build and/or publicization can be done by adjusting the SystemFiles and GameFiles item groups
 in the csproj.
+
+## Publishing packages
+
+A publish script, `publish-all.sh`, is provided to automate publishing all generated NuGet packages. It will:
+
+1. Check that you are on the main branch and that it is up to date with origin/main
+2. Check that you have no uncommitted changes
+3. Clean all `.nupkg` files from the project's `bin/Release` folder
+4. Run `build-all.sh` with Release configuration
+5. Run `dotnet nuget push --skip-duplicate` for all generated packages using an API key you provide
+
+**Note:** You must run `publish-all.sh` from the solution directory so that the relative `bin/Release` path is correct.
+
+### API Key Handling
+
+- You can provide your NuGet API key as a command line argument: `./publish-all.sh <NUGET_API_KEY>`
+- If not provided, the script will look for a `.nuget_api_key` file in the project directory and use its contents.
+- If you provide the key as an argument, it will be saved to `.nuget_api_key` for future use (this file is gitignored).
+
+Usage:
+
+```sh
+./publish-all.sh [NUGET_API_KEY]
+```
+
+Replace `[NUGET_API_KEY]` with your NuGet API key, or omit to use the saved key.
