@@ -30,7 +30,8 @@ echo "On main branch, up to date with origin/main, and no uncommitted changes."
 # get API key from input or file
 if [ "$#" -ge 1 ]; then
   NUGET_API_KEY="$1"
-  echo "$NUGET_API_KEY" > "$API_KEY_FILE"
+  printf "%s" "$NUGET_API_KEY" > "$API_KEY_FILE"
+  chmod 600 "$API_KEY_FILE"
   echo "NuGet API key saved to $API_KEY_FILE for future use."
 elif [ -f "$API_KEY_FILE" ]; then
   NUGET_API_KEY=$(<"$API_KEY_FILE")
