@@ -24,6 +24,14 @@
 #   windows: 3900764848237536293
 #   mac:     7832939953657548180
 #   linux:   7495630131038458486
+#
+# version 1.0.28714
+# note: win and mac have the patch for CVE-2025-59489 on 2025-10-03.
+#       linux did not get the patch and is on the release from 2025-09-24.
+#       the CVE patch contains no other changes aside from the patch.
+#   windows: 5977483240701257214 
+#   mac:     7917356342743942630
+#   linux:   1617544312110692774
 
 set -e
 
@@ -49,6 +57,7 @@ versions=(
   "1.0.28497"
   "1.0.28561"
   "1.0.28650"
+  "1.0.28714"
 )
 
 for version in "${versions[@]}"; do
