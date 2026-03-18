@@ -48,6 +48,29 @@ Replace `1.0.28324` with the desired version. The build will fail if `TargetSilk
 Adding/removing assemblies in the build and/or publicization can be done by adjusting the SystemFiles and GameFiles item groups
 in the csproj.
 
+### Retrieving files for old patches using DepotDownloader
+
+In the event of missing a patch or tranferring ownership, retrieving references for old files will be necessary. In such
+cases, [DepotDownloader](https://github.com/SteamRE/DepotDownloader) can be used to retrieve them from Steam.
+
+1. Collect the app, depot, and manifest ID
+    1. App ID is `1030300`
+    2. Depot ID is `1030301` for Windows, `1030302` for Mac, and `1030303` for Linux. For consistency, using the Windows
+       depot is probably desirable even if you are not on Windows.
+    3. Manifest ID is documented in `build-all.sh` for each patch.
+2. Create a refs folder for the target version: `mkdir refs/<target version>`
+3. Run depot downloader 
+   ```sh
+   depotdownloader -app 1030300 \
+       -depot 1030301 \
+       -manifest <manifest of target version> \
+       -dir ref/<target version> \
+       -filelist depotdownloader-file-filter.txt \
+       -qr
+   ```
+4. Move the files up to the root level of the refs directory and delete the `Hollow Knight Silksong_Data` and `.DepotDownloader`
+   directories.
+
 ## Publishing packages
 
 A publish script, `publish-all.sh`, is provided to automate publishing all generated NuGet packages. It will:
