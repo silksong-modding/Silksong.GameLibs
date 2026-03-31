@@ -2,8 +2,9 @@
 
 ref/
 
-## Ignore locally persisted secrets
+## Ignore nuke generated content
 .nuke/parameters.local-secrets.json
+.nuke/temp
 
 
 ## Ignore Visual Studio temporary files, build results, and
