@@ -14,7 +14,6 @@
     <IncludeBuildOutput>False</IncludeBuildOutput>
     <NoDefaultExcludes>true</NoDefaultExcludes>
     <PackageReadmeFile>doc/README.md</PackageReadmeFile>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/BadMagic100/Silksong.GameLibs</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <!--
@@ -57,6 +56,13 @@
     <Compile Remove="**/*" />
     <!-- System files are excluded because users don't need them. Game files are excluded because we will strip/publicize and include that instead-->
     <Content Include="ref/$(TargetSilksongVersion)/*" Exclude="@(SystemFiles);@(GameFiles)" Pack="True" PackagePath="ref/$(TargetFramework)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--Exclude nuke build files-->
+    <Compile Remove="build\**" />
+    <EmbeddedResource Remove="build\**" />
+    <None Remove="build\**" />
   </ItemGroup>
 
   <UsingTask TaskName="PublicizeTask" AssemblyFile="$(PkgBepInEx_AssemblyPublicizer_MSBuild)/lib/netstandard2.1/BepInEx.AssemblyPublicizer.MSBuild.dll" />
