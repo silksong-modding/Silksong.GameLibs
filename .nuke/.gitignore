@@ -1,0 +1,6 @@
+# Ignore local secrets
+parameters.local-secrets.json
+
+# Ignore generated contents
+temp/
+build.schema.json
