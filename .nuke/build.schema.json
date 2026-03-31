@@ -25,7 +25,8 @@
       "type": "string",
       "enum": [
         "Clean",
-        "Package"
+        "Package",
+        "Publish"
       ]
     },
     "Verbosity": {
@@ -99,13 +100,14 @@
   "allOf": [
     {
       "properties": {
-        "Configuration": {
+        "DryRun": {
+          "type": "boolean",
+          "description": "Whether to treat the build as a dryrun. Actions will be logged but not performed"
+        },
+        "NuGetApiKey": {
           "type": "string",
-          "description": "Configuration to build - Default is 'Debug' (local) or 'Release' (server)",
-          "enum": [
-            "Debug",
-            "Release"
-          ]
+          "description": "The NuGet API key to use for publishing",
+          "default": "Secrets must be entered via 'nuke :secrets [profile]'"
         },
         "Solution": {
           "type": "string",
