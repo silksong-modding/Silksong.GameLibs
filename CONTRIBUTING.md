@@ -19,6 +19,8 @@ in all of the example commands below.
 
 1. Note down the game version and related Steam manifest IDs. Add them to `build/SilksongVersionInfo.cs` so they can be used in
    builds.
+   - The easiest way to get manifest versions is to go to [SteamDB](https://steamdb.info/app/1030300/patchnotes/), find the patch
+     corresponding to the update date, and then grab the new manifest ids from the bottom of each depot's section of the patch page.
 2. Copy the contents of the Managed folder to `ref/(game version)`, for example, `ref/1.0.28324`
 
 Adding/removing assemblies in the build and/or publicization can be done by adjusting the SystemFiles and GameFiles item groups
