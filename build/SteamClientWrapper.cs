@@ -71,6 +71,46 @@ internal class SteamClientWrapper
         return Task.Run(User.LogOff);
     }
 
+    public async Task<SilksongVersionInfo> GetProductInfoAsync()
+    {
+        SteamApps.PICSTokensCallback tokenResult = await Apps.PICSGetAccessTokens(APP_ID, null);
+        ulong token = tokenResult.AppTokens.TryGetValue(APP_ID, out ulong t)
+            ? t
+            : throw new SteamClientException("Could not get PICS token for Silksong, do you own the game?");
+
+        SteamApps.PICSRequest request = new SteamApps.PICSRequest(APP_ID, token);
+        AsyncJobMultiple<SteamApps.PICSProductInfoCallback>.ResultSet productInfoResult = await Apps.PICSGetProductInfo(request, null);
+        SteamApps.PICSProductInfoCallback.PICSProductInfo appInfo = productInfoResult.Results.FirstOrDefault()
+            ?.Apps.Select(a => a.Value)
+            .FirstOrDefault(a => a.ID == APP_ID);
+        if (appInfo == null)
+        {
+            throw new SteamClientException("Steam did not return any app info for Silksong.");
+        }
+        LogKeyValues(appInfo.KeyValues);
+
+        KeyValue depots = appInfo.KeyValues["depots"];
+        ulong winManifestId = depots[SilksongVersionInfo.STEAM_DEPOT_ID_WINDOWS.ToString()]["manifests"]["public"]["gid"].AsUnsignedLong();
+        ulong macManifestId = depots[SilksongVersionInfo.STEAM_DEPOT_ID_MAC.ToString()]["manifests"]["public"]["gid"].AsUnsignedLong();
+        ulong linuxManifestId = depots[SilksongVersionInfo.STEAM_DEPOT_ID_LINUX.ToString()]["manifests"]["public"]["gid"].AsUnsignedLong();
+        return new()
+        {
+            Version = "UNKNOWN",
+            WindowsManifestId = winManifestId,
+            MacManifestId = macManifestId,
+            LinuxManifestId = linuxManifestId,
+        };
+    }
+
+    private void LogKeyValues(KeyValue kv, int indent = 0)
+    {
+        Log.Verbose("{Indent}{Key}={Value}", new string(' ', indent), kv.Name, kv.Value);
+        foreach (KeyValue child in kv.Children)
+        {
+            LogKeyValues(child, indent + 2);
+        }
+    }
+
     public async Task<DepotManifest> GetManifestAsync(uint depotId, ulong manifestId)
     {
         CdnAuthInfo authInfo = await GetAuthForDepotAsync(depotId);
@@ -86,11 +126,10 @@ internal class SteamClientWrapper
         );
     }
 
-    public async Task DownloadFileAsync(uint depotId, DepotManifest.FileData file, FileInfo destination, CancellationToken ct = default)
+    public async Task DownloadFileAsync(uint depotId, DepotManifest.FileData file, Stream destination, CancellationToken ct = default)
     {
         CdnAuthInfo authInfo = await GetAuthForDepotAsync(depotId);
-        using FileStream fs = destination.OpenWrite();
-        fs.SetLength((long)file.TotalSize);
+        destination.SetLength((long)file.TotalSize);
         foreach (DepotManifest.ChunkData chunk in file.Chunks)
         {
             ct.ThrowIfCancellationRequested();
@@ -109,8 +148,8 @@ internal class SteamClientWrapper
             {
                 throw new SteamClientException($"Unable to retrieve chunk {Convert.ToHexString(chunk.ChunkID)}");
             }
-            fs.Seek((long)chunk.Offset, SeekOrigin.Begin);
-            await fs.WriteAsync(chunkBytesUncompressed.AsMemory(0, written), ct);
+            destination.Seek((long)chunk.Offset, SeekOrigin.Begin);
+            await destination.WriteAsync(chunkBytesUncompressed.AsMemory(0, written), ct);
             ArrayPool<byte>.Shared.Return(chunkBytesUncompressed);
         }
     }
