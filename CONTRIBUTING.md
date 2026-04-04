@@ -53,7 +53,9 @@ of the patch page.
 
 Game files can be downloaded using `nuke download-depots`. This will prompt you to log into Steam. You must own the game on
 Steam to use this tooling. By default, a Steam Guard QR code will be generated to log in without typing your username and password.
-The secret parameters `--steam-user` and `--steam-password` can be used to log in by credentials, which is especially useful if
+Using a QR code is the most secure way to log in to Steam if possible, as the credentials are never stored outside program memory
+and therefore cannot be leaked. If QR code login is not available (e.g. because of https://github.com/silksong-modding/Silksong.GameLibs/issues/16)
+the secret parameters `--steam-user` and `--steam-password` can be used to log in by credentials, which is especially useful if
 you do not have 2FA/Steam Guard. See the section about secret management above for best practices.
 
 If you have the game on another platform like GOG you can also manually copy the content of the `Managed` folder to the 
