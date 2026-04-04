@@ -1,4 +1,6 @@
 using _build;
+using AssetsTools.NET;
+using AssetsTools.NET.Extra;
 using Nuke.Common;
 using Nuke.Common.Git;
 using Nuke.Common.IO;
@@ -35,9 +37,9 @@ partial class Build : NukeBuild
     [Secret, Parameter("The NuGet API key to use for publishing")]
     readonly string NuGetApiKey;
 
-    [Secret, Parameter("Steam username for downloading game files in DepotDownload target. If either username or password is absent, QR login will be used.")]
+    [Secret, Parameter("Steam username for downloading game files. If either username or password is absent, QR login will be used.")]
     readonly string SteamUser;
-    [Secret, Parameter("Steam password for downloading game files in DepotDownload target. If either username or password is absent, QR login will be used.")]
+    [Secret, Parameter("Steam password for downloading game files. If either username or password is absent, QR login will be used.")]
     readonly string SteamPassword;
 
     readonly AbsolutePath BinDir = RootDirectory / "bin";
@@ -158,7 +160,7 @@ partial class Build : NukeBuild
 
                     // normalize to unix-like file names
                     file.FileName = file.FileName.Replace('\\', '/');
-                    if (ManifestPathMatcher().IsMatch(file.FileName))
+                    if (ManagedPathMatcher().IsMatch(file.FileName))
                     {
                         string relativePath = Path.GetRelativePath("Hollow Knight Silksong_Data/Managed", Path.TrimEndingDirectorySeparator(file.FileName));
                         AbsolutePath intermediatePath = intermediateDir / relativePath;
@@ -169,7 +171,8 @@ partial class Build : NukeBuild
                             continue;
                         }
 
-                        await clientWrapper.DownloadFileAsync(depotId, file, intermediatePath.ToFileInfo(), ct);
+                        using FileStream fs = intermediatePath.ToFileInfo().OpenWrite();
+                        await clientWrapper.DownloadFileAsync(depotId, file, fs, ct);
                     }
                 }
 
@@ -178,6 +181,62 @@ partial class Build : NukeBuild
             });
 
             await clientWrapper.LogOutAsync();
+        });
+
+    Target GetCurrentVersionInfo => _ => _
+        .Description("Uses Steam to get the version info (manifest info and game version) for the latest version of Silksong")
+        .Executes(async () =>
+        {
+            SteamClientWrapper clientWrapper = new();
+            await clientWrapper.ConnectAndLoginAsync(SteamUser, SteamPassword);
+
+            SilksongVersionInfo versionInfo = await clientWrapper.GetProductInfoAsync();
+            Log.Information("Got manifest details for latest version: {Info}", versionInfo.ToDetailedString());
+
+            uint depotId = SilksongVersionInfo.STEAM_DEPOT_ID_WINDOWS;
+            DepotManifest manifest = await clientWrapper.GetManifestAsync(depotId, versionInfo.WindowsManifestId);
+
+            DepotManifest.FileData ggm = manifest.Files.FirstOrDefault(f => f.FileName.Replace('\\', '/').Equals("Hollow Knight Silksong_Data/globalgamemanagers"));
+            Assert.NotNull(ggm, "Failed to find globalgamemanagers file in manifest");
+            using MemoryStream ms = new();
+            await clientWrapper.DownloadFileAsync(depotId, ggm, ms);
+            ms.Seek(0, SeekOrigin.Begin);
+
+            await clientWrapper.LogOutAsync();
+
+            AssetsManager manager = new();
+            // the latest LZ4 TPK can be obtained from https://github.com/AssetRipper/Tpk/blob/master/README.md
+            manager.LoadClassPackage(RootDirectory / "build" / "classdata.tpk");
+
+            AssetsFileInstance afi = manager.LoadAssetsFile(ms, "globalgamemanagers");
+            manager.LoadClassDatabaseFromPackage(afi.file.Metadata.UnityVersion);
+            Log.Information("Loaded globalgamemanagers from manifest (Unity version {UnityVersion})", afi.file.Metadata.UnityVersion);
+
+            AssetFileInfo playerSettings = afi.file.GetAssetsOfType(AssetClassID.PlayerSettings).First();
+            Assert.NotNull(playerSettings, "PlayerSettings not found in globalgamemanagers");
+
+            AssetTypeValueField psBase = manager.GetBaseField(afi, playerSettings);
+            string gameVersion = psBase["bundleVersion"]?.AsString;
+            Assert.NotNullOrEmpty(gameVersion, "Game version not present in globalgamemanagers");
+
+            versionInfo = versionInfo with { Version = gameVersion };
+            SilksongVersionInfo existingRecord = SilksongVersionInfo.AllVersions.FirstOrDefault(v => v.Version == gameVersion);
+            if (existingRecord == null)
+            {
+                Log.Information("Found untracked game version: {Info}", versionInfo.ToDetailedString());
+            }
+            else if (existingRecord != versionInfo)
+            {
+                Log.Warning(
+                    "Found conflict between tracked version {Existing} and new version {Info}",
+                    existingRecord.ToDetailedString(),
+                    versionInfo.ToDetailedString()
+                );
+            }
+            else
+            {
+                Log.Information("All up to date for latest version: {Info}", versionInfo.ToDetailedString());
+            }
         });
 
     private IEnumerable<SilksongVersionInfo> GetTargetVersions()
@@ -211,5 +270,5 @@ partial class Build : NukeBuild
     }
 
     [GeneratedRegex(@"^Hollow Knight Silksong_Data/Managed/.+$")]
-    private static partial Regex ManifestPathMatcher();
+    private static partial Regex ManagedPathMatcher();
 }

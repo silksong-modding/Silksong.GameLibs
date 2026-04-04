@@ -15,6 +15,7 @@
     <PackageReference Include="Nuke.Common" Version="10.1.0" />
     <PackageReference Include="SteamKit2" Version="3.4.0" />
     <PackageReference Include="QRCoder" Version="1.7.0" />
+    <PackageReference Include="AssetsTools.NET" Version="3.0.4" />
   </ItemGroup>
 
 </Project>

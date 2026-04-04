@@ -47,9 +47,12 @@ There are also less-secure ways to enter secrets, should you choose to do so:
 ### Preparing game files
 
 If adding support for a new patch, the first step is to record the version and manifest IDs for each depot at that version
-in `build/SilksongVersionInfo.cs`. The easiest way to retrieve these is from [SteamDB](https://steamdb.info/app/1030300/patchnotes/);
-find the patch corresponding to the release date and copy down the new manifest IDs from the bottom of each depot's secion
-of the patch page.
+in `build/SilksongVersionInfo.cs`.
+- For the latest patch, run `nuke get-current-version-info`. This will retrieve the latest manifests and game version without
+  needing to open the game.
+- For older patches, use [SteamDB](https://steamdb.info/app/1030300/patchnotes/) to find the patch corresponding to the release
+  date and copy down the manifest IDs from the bottom of each depot's section. You will need to downpatch and launch the game
+  if you don't know the game version.
 
 Game files can be downloaded using `nuke download-depots`. This will prompt you to log into Steam. You must own the game on
 Steam to use this tooling. By default, a Steam Guard QR code will be generated to log in without typing your username and password.
