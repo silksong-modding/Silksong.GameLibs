@@ -1,4 +1,4 @@
 {
   "$schema": "build.schema.json",
-  "Solution": "Silksong.GameLibs.sln"
+  "Solution": "Silksong.GameLibs.slnx"
 }

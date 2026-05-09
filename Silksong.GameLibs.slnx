@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="build/_build.csproj">
+    <Build Project="false" />
+  </Project>
+  <Project Path="Silksong.GameLibs.csproj" />
+</Solution>
