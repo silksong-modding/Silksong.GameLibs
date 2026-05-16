@@ -7,7 +7,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <PackageVersion>1.2.0-silksong$(TargetSilksongVersion)</PackageVersion>
+    <PackageVersion>1.3.0-silksong$(TargetSilksongVersion)</PackageVersion>
     <Authors>BadMagic</Authors>
     <Description>The game libraries used for modding Hollow Knight: Silksong</Description>
     <PackageTags>silksong modding bepinex5</PackageTags>
@@ -22,11 +22,16 @@
     the usage of PackageReference.
     -->
     <NoWarn>$(NoWarn);NU5131</NoWarn>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CollectHookGenPackageFiles</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.3" ExcludeAssets="all" GeneratePathProperty="true" />
     <PackageReference Include="MonoMod.RuntimeDetour.HookGen" Version="22.7.31.1" PrivateAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="MonoMod" Version="22.7.31.1" PrivateAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="MonoMod.Utils" Version="22.7.31.1" PrivateAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="MonoMod.RuntimeDetour" Version="22.7.31.1" PrivateAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.4" PrivateAssets="all" GeneratePathProperty="true" />
   </ItemGroup>
 
   <ItemGroup>
@@ -80,10 +85,39 @@
     </ItemGroup>
   </Target>
 
-  <!-- 
-  TODO - add a hookgen target later, currently does not work but we don't have a way to distribute the generated hooks to players yet anyway
-  Can refer to https://github.com/BadMagic100/Grime.GameLibs/blob/d1189a5858d77fb5000f7db00be73113ac62798c/Grime.GameLibs.csproj#L59 as a starting point
-  -->
+  <Target Name="HookGen">
+    <PropertyGroup>
+      <HookGenRunnerDir>$(MSBuildProjectDirectory)\hookgen-runner\</HookGenRunnerDir>
+      <HookGenDll>$(HookGenRunnerDir)MonoMod.RuntimeDetour.HookGen.dll</HookGenDll>
+      <HookGenOutputDir>$(MSBuildProjectDirectory)\hookgen-output\$(TargetSilksongVersion)\</HookGenOutputDir>
+      <GameRefDir>$(MSBuildProjectDirectory)\ref\$(TargetSilksongVersion)\</GameRefDir>
+    </PropertyGroup>
 
+    <MakeDir Directories="$(HookGenRunnerDir)" />
+    <MakeDir Directories="$(HookGenOutputDir)" />
+
+    <Copy SourceFiles="$(PkgMonoMod_RuntimeDetour_HookGen)\lib\net5.0\MonoMod.RuntimeDetour.HookGen.dll" DestinationFolder="$(HookGenRunnerDir)" />
+    <Copy SourceFiles="$(PkgMonoMod_RuntimeDetour_HookGen)\lib\net5.0\MonoMod.RuntimeDetour.HookGen.runtimeconfig.json" DestinationFolder="$(HookGenRunnerDir)" />
+    <Copy SourceFiles="$(PkgMonoMod)\lib\net5.0\MonoMod.dll" DestinationFolder="$(HookGenRunnerDir)" />
+    <Copy SourceFiles="$(PkgMonoMod_Utils)\lib\net5.0\MonoMod.Utils.dll" DestinationFolder="$(HookGenRunnerDir)" />
+    <Copy SourceFiles="$(PkgMonoMod_RuntimeDetour)\lib\net5.0\MonoMod.RuntimeDetour.dll" DestinationFolder="$(HookGenRunnerDir)" />
+    <Copy SourceFiles="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.dll" DestinationFolder="$(HookGenRunnerDir)" />
+
+    <ItemGroup>
+      <HookGenInputs Include="@(GameFiles)">
+        <HookOutputPath>$(HookGenOutputDir)MMHOOK_%(Filename).dll</HookOutputPath>
+      </HookGenInputs>
+    </ItemGroup>
+
+    <Message Importance="high" Text="Running HookGen for %(HookGenInputs.Filename)" />
+    <Exec WorkingDirectory="$(GameRefDir)" EnvironmentVariables="DOTNET_ROLL_FORWARD=Major" Command="dotnet &quot;$(HookGenDll)&quot; --private &quot;%(HookGenInputs.FullPath)&quot; &quot;%(HookGenInputs.HookOutputPath)&quot;" />
+  </Target>
+
+  <Target Name="CollectHookGenPackageFiles" DependsOnTargets="HookGen">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(HookGenOutputDir)MMHOOK_*.dll" PackagePath="ref/$(TargetFramework)" />
+      <TfmSpecificPackageFile Include="$(HookGenOutputDir)MMHOOK_*.dll" PackagePath="lib/$(TargetFramework)" />
+    </ItemGroup>
+  </Target>
 
 </Project>
