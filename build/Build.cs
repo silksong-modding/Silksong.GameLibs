@@ -34,8 +34,14 @@ partial class Build : NukeBuild
     [Parameter("Whether to treat the build as a dryrun. Actions will be logged but not performed.")]
     readonly bool DryRun;
 
-    [Secret, Parameter("The NuGet API key to use for publishing")]
+    [Secret, Parameter("The nuget.org API key to use for publishing")]
     readonly string NuGetApiKey;
+
+    [Secret, Parameter("The git.silksong-modding.org access token (with package write scope) to use for publishing to the forge NuGet feed")]
+    readonly string ForgeNuGetApiKey;
+
+    const string NuGetOrgSource = "https://api.nuget.org/v3/index.json";
+    const string ForgeNuGetSource = "https://git.silksong-modding.org/api/packages/silksong-modding/nuget/index.json";
 
     [Secret, Parameter("Steam username for downloading game files. If either username or password is absent, QR login will be used.")]
     readonly string SteamUser;
@@ -82,6 +88,7 @@ partial class Build : NukeBuild
         .Description("Publishes NuGet packages for the specified game versions with guardrails. If no versions are specified, all versions will published.")
         .DependsOn(Clean, Package)
         .Requires(() => NuGetApiKey)
+        .Requires(() => ForgeNuGetApiKey)
         .Executes(() =>
         {
             Assert.True(GitTasks.GitHasCleanWorkingCopy(), "Error: You have uncommitted changes. Please commit or stash them before publishing.");
@@ -107,14 +114,23 @@ partial class Build : NukeBuild
                 return;
             }
             IEnumerable<AbsolutePath> packages = targetVersions.Select(v => BinDir / v).SelectMany(x => x.GlobFiles("**/*.nupkg"));
-            DotNetTasks.DotNetNuGetPush(_ => _
-                .SetSource("https://api.nuget.org/v3/index.json")
-                .SetApiKey(NuGetApiKey)
-                .SetSkipDuplicate(true)
-                .CombineWith(packages, (_, p) => _
-                    .SetTargetPath(p)),
-                degreeOfParallelism: 8
-            );
+            (string Source, string ApiKey)[] feeds =
+            [
+                (ForgeNuGetSource, ForgeNuGetApiKey),
+                (NuGetOrgSource, NuGetApiKey),
+            ];
+            foreach ((string source, string apiKey) in feeds)
+            {
+                Log.Information("Pushing packages to {Source}", source);
+                DotNetTasks.DotNetNuGetPush(_ => _
+                    .SetSource(source)
+                    .SetApiKey(apiKey)
+                    .SetSkipDuplicate(true)
+                    .CombineWith(packages, (_, p) => _
+                        .SetTargetPath(p)),
+                    degreeOfParallelism: 8
+                );
+            }
         });
 
     Target DownloadDepots => _ => _

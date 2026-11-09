@@ -14,7 +14,7 @@
     <IncludeBuildOutput>False</IncludeBuildOutput>
     <NoDefaultExcludes>true</NoDefaultExcludes>
     <PackageReadmeFile>doc/README.md</PackageReadmeFile>
-    <PackageProjectUrl>https://github.com/BadMagic100/Silksong.GameLibs</PackageProjectUrl>
+    <PackageProjectUrl>https://git.silksong-modding.org/silksong-modding/Silksong.GameLibs</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <!--
     NuGet complains about using the /ref/ path in packages because it doesn't work for projects using packages.config.

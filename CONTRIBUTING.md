@@ -42,7 +42,7 @@ There are also less-secure ways to enter secrets, should you choose to do so:
 
 - With command line flags as usual (preferred for future CI use cases)
 - In a `parameters.<profile>.json` entry using plaintext instead Nuke's encryption mechanism
-- In an environment variable, such as `NUGET_API_KEY` or `NUKE_NUGET_API_KEY`
+- In an environment variable, such as `NUGET_API_KEY`, `FORGE_NUGET_API_KEY`, or their `NUKE_`-prefixed forms
 
 ### Preparing game files
 
@@ -75,8 +75,13 @@ can accomplish this with the `download-depots` target as detailed above.
 
 ### Publishing packages
 
-Packages can be published using `nuke publish`. A NuGet API key (`--nuget-api-key`) with the appropriate publishing scope 
-is also required; see the section about secret management above for best practices.
+Packages can be published using `nuke publish`. Packages are pushed to both the
+[forge NuGet feed](https://git.silksong-modding.org/silksong-modding/-/packages) and nuget.org, so two keys are required:
+
+- `--forge-nuget-api-key`: a git.silksong-modding.org access token with package write scope
+- `--nuget-api-key`: a nuget.org API key with the appropriate publishing scope
+
+See the section about secret management above for best practices.
 
 The publishing target has several guard rails to prevent incorrect publishes. Before publishing it will:
 
